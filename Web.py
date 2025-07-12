@@ -3,6 +3,7 @@ import joblib
 import pandas as pd
 import numpy as np
 import shap
+import xgboost as xgb
 import matplotlib.pyplot as plt
 
 # 1. 载入模型
@@ -19,7 +20,7 @@ feature_label = ['IC_DeepFeature1147', 'Zeff_DeepFeature1540', 'VMI_exponential_
                  'IC_wavelet-LLH_ngtdm_Coarseness', 'Zeff_DeepFeature763', 'IC_DeepFeature1130', 'IC_DeepFeature1791']
 
 # 3. Streamlit 输入
-st.title('XGBoost Predictive Model and SHAP Analysis')
+st.title('XGBoost 预测模型与 SHAP 分析')
 st.sidebar.header('输入特征')
 
 # 输入特征表单
@@ -32,24 +33,24 @@ input_df = pd.DataFrame([inputs])
 
 # 4. 预测按钮
 if st.sidebar.button('预测'):
-    # 预测
-    dinput = xgb.DMatrix(input_df.values)
-    prediction = model_xgb.predict(dinput)[0]
+    try:
+        # 确保输入数据正确
+        input_data = xgb.DMatrix(input_df)  # 直接传入 DataFrame 格式的数据，不需要 .values
+        prediction = model_xgb.predict(input_data)[0]  # 进行预测
 
-    # 展示预测结果
-    st.subheader('预测结果')
-    st.write(f'预测值: {prediction}')
+        # 展示预测结果
+        st.subheader('预测结果')
+        st.write(f'预测值: {prediction}')
 
-    # 计算 SHAP 值
-    explainer = shap.TreeExplainer(model_xgb)
-    shap_values = explainer.shap_values(input_df)
+        # 计算 SHAP 值
+        explainer = shap.TreeExplainer(model_xgb)
+        shap_values = explainer.shap_values(input_df)
 
-    # 5. 显示 SHAP 力图
-    st.subheader('SHAP 力图')
-    shap.initjs()
-    shap.force_plot(explainer.expected_value, shap_values[0], input_df.iloc[0, :], feature_names=feature_label)
+        # 5. 显示 SHAP 力图
+        st.subheader('SHAP 力图')
+        shap.initjs()
+        shap.force_plot(explainer.expected_value, shap_values[0], input_df.iloc[0, :], feature_names=feature_label)
 
-    # 可选：保存 SHAP 力图为图片（可选步骤）
-    # plt.savefig('force_plot_sample0.png', dpi=300, bbox_inches="tight", pad_inches=0.1)
-    # st.image('force_plot_sample0.png')
+    except Exception as e:
+        st.error(f"发生错误: {str(e)}")
 
