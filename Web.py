@@ -49,7 +49,7 @@ if st.sidebar.button('预测'):
         # 5. 显示 SHAP 力图
         st.subheader('SHAP 力图')
         shap.initjs()
-        shap.force_plot(explainer.expected_value, shap_values[0], input_df.iloc[0, :], feature_names=feature_label, matplotlib=True, max_display=5)
+        shap.force_plot(explainer.expected_value, shap_values[0], input_df.iloc[0, :], feature_names=feature_label, matplotlib=True,contribution_threshold=0.1)
         plt.savefig("shap_force_plot.png", bbox_inches='tight', dpi=1200)
 
         st.image("shap_force_plot.png")
